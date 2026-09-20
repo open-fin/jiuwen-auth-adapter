@@ -57,3 +57,19 @@ Signing keys must support rotation. Private keys remain in the adapter; Gateway 
 Provider-specific code terminates at the `IdentityProvider` interface. Claim mapping is configuration-driven per tenant wherever possible. Generic OIDC is the first provider; Keycloak is an OIDC configuration rather than a hard-coded dependency.
 
 SAML can be added later by terminating the SAML assertion at the adapter and issuing the same internal token. JiuwenSwarm therefore never needs to understand SAML.
+
+## One repository, two security directions
+
+This repository owns two modules with different trust directions:
+
+```text
+Inbound authentication
+User / customer portal -> Auth Server -> Jiuwen principal and internal token
+
+Outbound credentials
+AgentServer -> Credential Broker -> customer OAuth server -> customer MCP Gateway
+```
+
+The internal Jiuwen token normally has `aud=jiuwenswarm` and must not be forwarded to a customer MCP Gateway. The credential broker obtains a separate downstream token whose audience and scopes match that MCP Gateway.
+
+Static shared MCP credentials do not require the broker. Dynamic client-credentials, tenant-level, user-level, token-exchange, refresh, or revocation requirements do.

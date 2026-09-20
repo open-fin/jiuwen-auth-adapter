@@ -1,6 +1,6 @@
 # Jiuwen Auth Adapter
 
-Jiuwen Auth Adapter is the identity compatibility layer for JiuwenSwarm. It connects customer identity systems such as Keycloak and other OpenID Connect providers to one stable identity contract understood by JiuwenSwarm.
+Jiuwen Auth Adapter is the authentication and credential compatibility layer for JiuwenSwarm. One repository contains two related capabilities: inbound user authentication and outbound credential brokering for customer MCP Gateways and other protected services.
 
 The adapter is intentionally separate from JiuwenSwarm's business Gateway. It handles login protocols and provider-specific claim mapping; the Gateway remains responsible for enforcing authentication and authorization on every protected HTTP, SSE, and WebSocket request.
 
@@ -16,7 +16,7 @@ Customers may also enter JiuwenSwarm in different ways:
 2. The user opens JiuwenSwarm directly and JiuwenSwarm initiates an OIDC Authorization Code + PKCE login.
 3. A future customer uses another OIDC provider or SAML rather than Keycloak.
 
-This adapter lets all entry paths converge on the same normalized identity and short-lived JiuwenSwarm token.
+This adapter lets all entry paths converge on the same normalized identity and short-lived JiuwenSwarm token. Its credential-broker module can then use that verified identity to obtain, cache, refresh, and isolate downstream MCP credentials when static configuration is not sufficient.
 
 ## Target architecture
 
@@ -53,6 +53,9 @@ The adapter is responsible for:
 - publishing a JWKS endpoint for JiuwenSwarm Gateway verification;
 - optionally maintaining server-side sessions and secure HttpOnly cookies;
 - producing audit events without logging tokens, authorization codes, or secrets.
+- resolving downstream credentials by service, tenant, user, and scope;
+- supporting OAuth client credentials and token exchange for MCP Gateways;
+- caching and refreshing short-lived downstream tokens without exposing client secrets to AgentServer;
 
 The adapter is not responsible for:
 
@@ -91,6 +94,7 @@ POST /auth/refresh                    Refresh or rotate a session
 POST /auth/logout                     Revoke the local session
 GET  /auth/me                         Return the normalized principal
 GET  /.well-known/jwks.json           Publish internal signing keys
+POST /internal/v1/credentials/mcp     Resolve a short-lived MCP credential
 ```
 
 Compatibility routes matching the current JiuwenSwarm frontend may be exposed during migration:
@@ -107,6 +111,7 @@ POST /idp/v1/auth/logout
 .
 ├── cmd/server/                    Process entry point
 ├── internal/config/               Environment and tenant configuration
+├── internal/credential/           Downstream MCP credential providers
 ├── internal/httpapi/              Login, callback, exchange and identity HTTP API
 ├── internal/principal/            Provider-neutral identity model
 ├── internal/provider/             Upstream identity provider interfaces
@@ -116,6 +121,7 @@ POST /idp/v1/auth/logout
 ├── docs/
 │   ├── architecture.md            Security boundaries and request flows
 │   ├── development-guide.md       Incremental implementation and test gates
+│   ├── mcp-gateway-integration.md Customer-condition decision guide
 │   └── jiuwenswarm-integration.md Required JiuwenSwarm changes
 ├── Dockerfile
 ├── Makefile
@@ -148,6 +154,7 @@ See the following documents:
 
 - [Architecture](docs/architecture.md)
 - [Development and verification guide](docs/development-guide.md)
+- [Customer MCP Gateway integration decision guide](docs/mcp-gateway-integration.md)
 - [JiuwenSwarm integration](docs/jiuwenswarm-integration.md)
 
 ## License
