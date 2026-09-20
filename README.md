@@ -115,6 +115,7 @@ POST /idp/v1/auth/logout
 ├── internal/token/                Internal JWT issuer and JWKS publication
 ├── docs/
 │   ├── architecture.md            Security boundaries and request flows
+│   ├── development-guide.md       Incremental implementation and test gates
 │   └── jiuwenswarm-integration.md Required JiuwenSwarm changes
 ├── Dockerfile
 ├── Makefile
@@ -143,7 +144,11 @@ Only health endpoints are implemented in the initial scaffold. Security-sensitiv
 - Keep Gateway unreachable from untrusted networks except through an approved ingress path.
 - Gateway must still validate the internal token; network isolation alone is not authentication.
 
-See [JiuwenSwarm integration](docs/jiuwenswarm-integration.md) for the required changes in `dev-stable`.
+See the following documents:
+
+- [Architecture](docs/architecture.md)
+- [Development and verification guide](docs/development-guide.md)
+- [JiuwenSwarm integration](docs/jiuwenswarm-integration.md)
 
 ## License
 
